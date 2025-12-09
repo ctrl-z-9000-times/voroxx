@@ -1,0 +1,17 @@
+[package]
+name = "voroxx"
+version = "0.1.1"
+authors = ["Chris H. Rycroft", "David McDougall <dam1784@rit.edu>"]
+edition = "2018"
+description = "Voro++, a 3D cell-based Voronoi library"
+homepage = "http://math.lbl.gov/voro++/"
+readme = "README"
+license-file = "LICENSE"
+keywords = ["voronoi", "voronoi_diagram", "tessellation", "3D", "geometry"]
+categories = ["api-bindings", "science", "mathematics", "simulation"]
+
+[dependencies]
+cpp = "0.5"
+
+[build-dependencies]
+cpp_build = "0.5"
