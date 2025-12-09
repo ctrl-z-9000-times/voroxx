@@ -1,6 +1,6 @@
 // File import example code
 //
-// Author   : Chris H. Rycroft (LBL / UC Berkeley)
+// Author   : Chris H. Rycroft (Harvard University / LBL)
 // Email    : chr@alum.mit.edu
 // Date     : August 30th 2011
 
@@ -47,4 +47,5 @@ int main() {
 		fflush(stdout);
 		fprintf(outputFile,"%d %e %e %e\n", id,x,y,z);
 	} while (cl.inc());
+	fclose(outputFile);
 }
