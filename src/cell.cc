@@ -1,6 +1,6 @@
 // Voro++, a 3D cell-based Voronoi library
 //
-// Author   : Chris H. Rycroft (LBL / UC Berkeley)
+// Author   : Chris H. Rycroft (Harvard University / LBL)
 // Email    : chr@alum.mit.edu
 // Date     : August 30th 2011
 
@@ -228,13 +228,15 @@ void voronoicell_base::add_memory_vorder(vc_class &vc) {
 	fprintf(stderr,"Vertex order memory scaled up to %d\n",i);
 #endif
 	p1=new int[i];
-	for(j=0;j<current_vertex_order;j++) p1[j]=mem[j];while(j<i) p1[j++]=0;
+	for(j=0;j<current_vertex_order;j++) p1[j]=mem[j];
+	while(j<i) p1[j++]=0;
 	delete [] mem;mem=p1;
 	p2=new int*[i];
 	for(j=0;j<current_vertex_order;j++) p2[j]=mep[j];
 	delete [] mep;mep=p2;
 	p1=new int[i];
-	for(j=0;j<current_vertex_order;j++) p1[j]=mec[j];while(j<i) p1[j++]=0;
+	for(j=0;j<current_vertex_order;j++) p1[j]=mec[j];
+	while(j<i) p1[j++]=0;
 	delete [] mec;mec=p1;
 	vc.n_add_memory_vorder(i);
 	current_vertex_order=i;
@@ -290,7 +292,8 @@ void voronoicell_base::add_memory_xse() {
  * \param[in] (ymin,ymax) the minimum and maximum y coordinates.
  * \param[in] (zmin,zmax) the minimum and maximum z coordinates. */
 void voronoicell_base::init_base(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax) {
-	for(int i=0;i<current_vertex_order;i++) mec[i]=0;up=0;
+	for(int i=0;i<current_vertex_order;i++) mec[i]=0;
+	up=0;
 	mec[3]=p=8;xmin*=2;xmax*=2;ymin*=2;ymax*=2;zmin*=2;zmax*=2;
 	*pts=xmin;pts[1]=ymin;pts[2]=zmin;
 	pts[4]=xmax;pts[5]=ymin;pts[6]=zmin;
@@ -317,7 +320,8 @@ void voronoicell_base::init_base(double xmin,double xmax,double ymin,double ymax
 /** Initializes an L-shaped Voronoi cell of a fixed size for testing the
  * convexity robustness. */
 void voronoicell::init_l_shape() {
-	for(int i=0;i<current_vertex_order;i++) mec[i]=0;up=0;
+	for(int i=0;i<current_vertex_order;i++) mec[i]=0;
+	up=0;
 	mec[3]=p=12;
 	const double j=0;
 	*pts=-2;pts[1]=-2;pts[2]=-2;
@@ -356,7 +360,8 @@ void voronoicell::init_l_shape() {
  *              vertices are initialized at (-l,0,0), (l,0,0), (0,-l,0),
  *              (0,l,0), (0,0,-l), and (0,0,l). */
 void voronoicell_base::init_octahedron_base(double l) {
-	for(int i=0;i<current_vertex_order;i++) mec[i]=0;up=0;
+	for(int i=0;i<current_vertex_order;i++) mec[i]=0;
+	up=0;
 	mec[4]=p=6;l*=2;
 	*pts=-l;pts[1]=0;pts[2]=0;
 	pts[4]=l;pts[5]=0;pts[6]=0;
@@ -382,7 +387,8 @@ void voronoicell_base::init_octahedron_base(double l) {
  * \param (x2,y2,z2) a position vector for the third vertex.
  * \param (x3,y3,z3) a position vector for the fourth vertex. */
 void voronoicell_base::init_tetrahedron_base(double x0,double y0,double z0,double x1,double y1,double z1,double x2,double y2,double z2,double x3,double y3,double z3) {
-	for(int i=0;i<current_vertex_order;i++) mec[i]=0;up=0;
+	for(int i=0;i<current_vertex_order;i++) mec[i]=0;
+	up=0;
 	mec[3]=p=4;
 	*pts=x0*2;pts[1]=y0*2;pts[2]=z0*2;
 	pts[4]=x1*2;pts[5]=y1*2;pts[6]=z1*2;
@@ -1713,6 +1719,70 @@ void voronoicell_base::minkowski_formula(double x0,double y0,double z0,double r,
 	}
 	vo+=voc*si;
 	ar+=arc*si;
+}
+
+static double dot_product(double *a, double *b) {
+	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+}
+
+static void cross_product(double *a, double *b, double *c) {
+	c[0]=a[1]*b[2]-a[2]*b[1];
+	c[1]=a[2]*b[0]-a[0]*b[2];
+	c[2]=a[0]*b[1]-a[1]*b[0];
+}
+
+static double triple_product(double *a, double *b, double *c) {
+	double cp[3];
+	cross_product(b,c,cp);
+	return dot_product(a,cp);
+}
+
+static void normalize_vector(double *x, double *normalized) {
+	double normsq = dot_product(x,x);
+	double invnorm = normsq<=0?0:1/sqrt(normsq);
+	for (int i=0;i<3;i++) {
+		normalized[i]=x[i]*invnorm;
+	}
+}
+
+static double calculate_solid_angle(double *R1, double *R2, double *R3) {
+	// Method described in:
+	// A. Van Oosterom and J. Strackee
+	// "The Solid Angle of a Plane Triangle"
+	// IEEE Transactions on Biomedical Engineering, BME-30, 2, 1983, 125--126
+	// https://doi.org/10.1109/TBME.1983.325207
+	return fabs(2*atan2(triple_product(R1,R2,R3),1+dot_product(R1,R2)+dot_product(R2,R3)+dot_product(R3,R1)));
+}
+
+/** Calculates the solid angles of each face of the Voronoi cell and prints
+ * the results to an output stream.
+ * \param[out] v the vector to store the results in. */
+void voronoicell_base::solid_angles(std::vector<double> &v) {
+	double solid_angle;
+	std::vector<double> normalized(3*p);
+	v.clear();
+	int i,j,k,l,m,n;
+	for (i=0;i<p;i++) {
+		normalize_vector(&pts[4*i], &normalized[3*i]);
+	}
+
+	for(i=1;i<p;i++) for(j=0;j<nu[i];j++) {
+		k=ed[i][j];
+		if(k>=0) {
+			solid_angle=0;
+			ed[i][j]=-1-k;
+			l=cycle_up(ed[i][nu[i]+j],k);
+			m=ed[k][l];ed[k][l]=-1-m;
+			while(m!=i) {
+				n=cycle_up(ed[k][nu[k]+l],m);
+				solid_angle+=calculate_solid_angle(&normalized[3*i],&normalized[3*k],&normalized[3*m]);
+				k=m;l=n;
+				m=ed[k][l];ed[k][l]=-1-m;
+			}
+			v.push_back(solid_angle);
+		}
+	}
+	reset_edges();
 }
 
 /** Calculates the areas of each face of the Voronoi cell and prints the
