@@ -112,6 +112,18 @@ pub trait VoronoiCellBase: VoronoiCellBaseFFI {
         return coords;
     }
 
+    /// Calculates the solid angle of each face of the Voronoi cell.
+    fn solid_angles(&self) -> Vec<f64> {
+        let ptr = self.ptr();
+        let (areas, data_ptr) = vec_ptr_pair!(self.number_of_faces() as usize);
+        cpp!(unsafe [ptr as "voronoicell_base*", data_ptr as "double*"] {
+            std::vector<double> temp;
+            ptr->solid_angles(temp);
+            std::copy(temp.begin(), temp.end(), data_ptr);
+        });
+        return areas;
+    }
+
     /// Calculates the areas of each face of the Voronoi cell.
     fn face_areas(&self) -> Vec<f64> {
         let ptr = self.ptr();

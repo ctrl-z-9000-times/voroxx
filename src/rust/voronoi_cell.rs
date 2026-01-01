@@ -172,4 +172,7 @@ fn ffi_sanity() {
         &[1.0, 1.0, 0.0],
     );
     assert!(tetrhedron.number_of_faces() == 4);
+
+    let x = VoronoiCell::init(&[-1.0; 3], &[1.0; 3]);
+    assert!(x.solid_angles() == vec![2.094395102393196; 6]); //    PI*2/3
 }
