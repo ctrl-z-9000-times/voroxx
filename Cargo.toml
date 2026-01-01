@@ -1,10 +1,12 @@
 [package]
 name = "voroxx"
-version = "0.1.1"
+version = "1.0.0"
 authors = ["Chris H. Rycroft", "David McDougall <dam1784@rit.edu>"]
 edition = "2018"
+rust-version = "1.68.2"
 description = "Voro++, a 3D cell-based Voronoi library"
 homepage = "http://math.lbl.gov/voro++/"
+repository = "https://github.com/ctrl-z-9000-times/voroxx"
 readme = "README"
 license-file = "LICENSE"
 keywords = ["voronoi", "voronoi_diagram", "tessellation", "3D", "geometry"]

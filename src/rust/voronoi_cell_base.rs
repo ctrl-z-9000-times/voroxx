@@ -203,14 +203,4 @@ pub trait VoronoiCellBase: VoronoiCellBaseFFI {
             return ptr->max_radius_squared() * 0.25;
         })
     }
-
-    // TODO: Drawing routines (all 6 of them?)
 }
-
-// I think these 2 methods are internal? There is no real reason that they can
-// not be public, but also they don't look very useful...
-// bool plane_intersects (double x, double y, double z, double rsq)
-// bool plane_intersects_guess (double x, double y, double z, double rsq)
-
-// What even is this method?
-// void voro::voronoicell_base::construct_relations()
